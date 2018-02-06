@@ -1,15 +1,15 @@
 from django.contrib.auth.models import User
-from crypto_rest.models import Alert
+from restmanager.models import Alert
 from rest_framework import serializers
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ('url', 'username', 'email')
+        fields = ('id', 'email', 'username')
 
 
 class AlertSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Alert
-        fields = ('url', 'user', 'currency', 'mode', 'threshold')
+        fields = ('id', 'currency', 'mode', 'threshold')
