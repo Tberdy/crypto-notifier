@@ -3,6 +3,7 @@ from restmanager.models import Alert
 from rest_framework import viewsets
 from rest_framework.response import Response
 from restmanager.serializers import UserSerializer, AlertSerializer
+from restmanager.utils import createTask, cleanupTasks
 
 from rest_framework import authentication, permissions
 from rest_framework.decorators import api_view, detail_route
@@ -53,20 +54,54 @@ class AlertViewSet(viewsets.ModelViewSet):
     def create(self, request, user_pk=None):
         print(request.data)
         alert = Alert()
-        alert.currency = request.data['currency']
+        alert.crypto = request.data['crypto']
+        alert.inCurrency = request.data['inCurrency']
         alert.mode = request.data['mode']
         alert.threshold = request.data['threshold']
+
+        if alert.mode == 'timeframe':
+            alert.timeframe = request.data['timeframe']
+        else:
+            alert.timeframe = 0
+
+        alert.currency_pair = alert.crypto + '-' + alert.inCurrency
         alert.user = User.objects.get(pk=user_pk)
         alert.save()
+
+        createTask(alert.currency_pair)
+
         serializer = AlertSerializer(alert, context={'request': request})
         return Response(serializer.data)
 
     def update(self, request, pk=None, user_pk=None):
         alert = Alert.objects.get(pk=pk)
-        alert.currency = request.data['currency']
+
+        old_currency_pair = alert.currency_pair
+        new_currency_pair = request.data['crypto'] + '-' + request.data['inCurrency']
+
+        alert.crypto = request.data['crypto']
+        alert.inCurrency = request.data['inCurrency']
         alert.mode = request.data['mode']
         alert.threshold = request.data['threshold']
+
+        if alert.mode == 'timeframe':
+            alert.timeframe = request.data['timeframe']
+        else:
+            alert.timeframe = 0
+
+        alert.currency_pair = new_currency_pair
         alert.save()
+
+        if old_currency_pair != new_currency_pair:
+            cleanupTasks(old_currency_pair)
+            createTask(new_currency_pair)
 
         serializer = AlertSerializer(alert, context={'request': request})
         return Response(serializer.data)
+
+    def delete(self, request, pk=None, user_pk=None):
+        alert = Alert.objects.get(pk=pk)
+        currency_pair = alert.currency_pair
+
+        alert.delete()
+        cleanupTasks(currency_pair)

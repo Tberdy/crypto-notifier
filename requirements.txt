@@ -3,3 +3,4 @@ djangorestframework
 drf-nested-routers
 django-dotenv
 mysqlclient
+coinbase

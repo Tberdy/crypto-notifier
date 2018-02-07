@@ -14,6 +14,9 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Alert(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    currency = models.CharField(max_length=255)
-    mode = models.CharField(max_length=255)
+    crypto = models.CharField(max_length=10)
+    inCurrency = models.CharField(max_length=10)
+    mode = models.CharField(max_length=20)
     threshold = models.IntegerField()
+    timeframe = models.IntegerField()
+    currency_pair = models.CharField(max_length=10)

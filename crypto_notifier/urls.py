@@ -18,7 +18,6 @@ from rest_framework_nested import routers
 from rest_framework.authtoken import views
 from restmanager.views import UserViewSet, AlertViewSet
 
-
 router = routers.SimpleRouter()
 router.register(r'users', UserViewSet)
 

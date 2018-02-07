@@ -12,4 +12,4 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 class AlertSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Alert
-        fields = ('id', 'currency', 'mode', 'threshold')
+        fields = ('id', 'crypto', 'inCurrency', 'mode', 'threshold', 'timeframe')
