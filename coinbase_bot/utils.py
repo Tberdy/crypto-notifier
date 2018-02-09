@@ -6,8 +6,8 @@ from email.mime.text import MIMEText
 
 from coinbase.wallet.client import Client
 from background_task import background
+from background_task.models_completed import CompletedTask
 
-from django.contrib.auth.models import User
 from restmanager.models import Alert
 
 
@@ -30,7 +30,7 @@ def sendMail(email, message):
 def sendNotification(alert):
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
-    
+
     message = ''
     if alert.mode == 'up':
         message = alert.crypto + ' is now above ' + str(alert.threshold) + ' ' + alert.inCurrency + ' !'
@@ -38,7 +38,6 @@ def sendNotification(alert):
         message = alert.crypto + ' is now under ' + str(alert.threshold) + ' ' + alert.inCurrency + ' !'
 
     logger.info(message)
-    logger.info(alert.user.email)
     sendMail(alert.user.email, message)
 
 
@@ -67,3 +66,5 @@ def checkCryptoState(currency_pair):
                 if alert.threshold > price:
                     sendNotification(alert)
                     alert.delete()
+
+    CompletedTask.objects.all().delete()
