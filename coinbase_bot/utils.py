@@ -66,5 +66,6 @@ def checkCryptoState(currency_pair):
                 if alert.threshold > price:
                     sendNotification(alert)
                     alert.delete()
+                    
 
     CompletedTask.objects.all().delete()

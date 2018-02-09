@@ -5,11 +5,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from restmanager.serializers import UserSerializer, AlertSerializer
 from restmanager.utils import createTask, cleanupTasks
+from restmanager.validators import validateUserData, validateAlertData
 
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -31,6 +33,11 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        validateUserData(request.data)
+        user = User.objects.filter(username=request.data['username'])
+        if user:
+            raise ValidationError('Username already exists')
+
         user = User.objects.create_user(request.data['username'], request.data['email'], request.data['password'])
         user.save()
 
@@ -38,6 +45,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
+        validateUserData(request.data)
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         user.username = request.data['username']
@@ -75,6 +83,7 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, user_pk=None):
+        validateAlertData(request.data)
         alert = Alert()
         alert.crypto = request.data['crypto']
         alert.inCurrency = request.data['inCurrency']
@@ -96,6 +105,7 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None, user_pk=None):
+        validateAlertData(request.data)
         alert = Alert.objects.get(pk=pk)
 
         old_currency_pair = alert.currency_pair
@@ -134,11 +144,16 @@ class AlertViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes(())
 def register(request):
+    validateUserData(request.data)
+    user = User.objects.filter(username=request.data['username'])
+    if user:
+        raise ValidationError('Username already exists')
+
     user = User.objects.create_user(request.data['username'], request.data['email'], request.data['password'])
     user.save()
 
     serializer = UserSerializer(user, context={'request': request})
-    return Response({'success': True, 'data': serializer.data})
+    return Response(serializer.data)
 
 
 class login(APIView):

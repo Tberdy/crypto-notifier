@@ -4,3 +4,4 @@ drf-nested-routers
 django-dotenv
 mysqlclient
 coinbase
+django-background-tasks
